@@ -7,12 +7,12 @@ module.exports = {
     entry: {
         picker: './src/index.jsx',
     },
-    mode: "development",
+    mode: "production",
     output: {
         filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
         library: 'DateRangePicker',
-        libraryExport: 'default'
+        // libraryTarget: "umd",
     },
     // optimization: {
     //     minimize: true,
@@ -26,8 +26,19 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /\.s[ac]ss$/i,
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    "sass-loader",
+                ],
+            }, {
                 test: /\.css$/i,
-                use: ["style-loader", "css-loader"],
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    "sass-loader",
+                ],
             },
             {
                 test: /\.js|.jsx$/,

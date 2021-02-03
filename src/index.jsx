@@ -2,6 +2,12 @@ import * as moment from "moment";
 import "moment/locale/vi"
 import Picker from "pickerjs";
 import "pickerjs/dist/picker.min.css";
+import SwiperCore, {Navigation} from 'swiper';
+import {Swiper, SwiperSlide} from 'swiper/react';
+import 'swiper/swiper.scss';
+import './style.scss';
+
+SwiperCore.use([Navigation]);
 
 moment.locale('vi');
 var React = require('react');
@@ -9,24 +15,32 @@ var ReactDOM = require('react-dom');
 
 const icons = {
     right: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNyIgaGVpZ2h0PSIxNCIgdmlld0JveD0iMCAwIDcgMTQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xLjAwMDUxIDE0TDcgN0wxLjAwMDUxIDBMNC43NjgzN2UtMDcgMS4xNjY1M0w1LjAwMDQgN0w0Ljc2ODM3ZS0wNyAxMi44MzM1TDEuMDAwNTEgMTRaIiBmaWxsPSIjNzc4RkJCIi8+Cjwvc3ZnPgo=',
-    left: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNyIgaGVpZ2h0PSIxNCIgdmlld0JveD0iMCAwIDcgMTQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik01Ljk5OTQ5IDBMMCA3TDUuOTk5NDkgMTRMNyAxMi44MzM1TDEuOTk5NiA3TDcgMS4xNjY1M0w1Ljk5OTQ5IDBaIiBmaWxsPSIjNzc4RkJCIi8+Cjwvc3ZnPgo='
+    left: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNyIgaGVpZ2h0PSIxNCIgdmlld0JveD0iMCAwIDcgMTQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik01Ljk5OTQ5IDBMMCA3TDUuOTk5NDkgMTRMNyAxMi44MzM1TDEuOTk5NiA3TDcgMS4xNjY1M0w1Ljk5OTQ5IDBaIiBmaWxsPSIjNzc4RkJCIi8+Cjwvc3ZnPgo=',
+    down: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOSIgaGVpZ2h0PSI1IiB2aWV3Qm94PSIwIDAgOSA1IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMCAwLjcxNDY0Nkw0LjUgNUw5IDAuNzE0NjQ2TDguMjUwMDkgMEw0LjUgMy41NzE3MkwwLjc0OTkxMiAwTDAgMC43MTQ2NDZaIiBmaWxsPSIjNzc4RkJCIi8+Cjwvc3ZnPgo='
 }
 
-class AppComponent extends React.Component {
-    render() {
-        return <div>
-            <MyDatePicker/>
-        </div>;
-    }
-}
-
-import './style.css';
-
-let inputRef = React.createRef();
-
-class MyDatePicker extends React.Component {
+class HDDateRangePicker extends React.Component {
     constructor() {
         super();
+        this.rangeDefault = [
+            {
+                text: 'Hôm nay',
+                start: moment(new Date()).startOf('date').toDate(),
+                end: moment(new Date()).endOf('date').toDate(),
+            }, {
+                text: '2 ngày',
+                start: moment(new Date()).subtract(2, 'days').startOf('date').toDate(),
+                end: moment(new Date()).endOf('date').toDate(),
+            }, {
+                text: '7 ngày',
+                start: moment(new Date()).subtract(7, 'days').startOf('date').toDate(),
+                end: moment(new Date()).endOf('date').toDate(),
+            }, {
+                text: '15 ngày',
+                start: moment(new Date()).subtract(15, 'days').startOf('date').toDate(),
+                end: moment(new Date()).endOf('date').toDate(),
+            },
+        ]
         this.daysMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         this.monthMap = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
         let date = new Date();
@@ -41,51 +55,80 @@ class MyDatePicker extends React.Component {
             currentPoint: 'start',
             visiblePopupYearMonth: false,
             visiblePopupTime: false,
+            rangeText: ''
         }
         this.inputStart = React.createRef();
         this.inputEnd = React.createRef();
         this.popupYearMonthContent = React.createRef();
         this.popupYearMonthInput = React.createRef();
         this.popupYearMonthTrigger = React.createRef();
-        this.popupYearMonth = null;
         this.pickerYearMonth = null;
 
         this.popupTimeContent = React.createRef();
         this.popupTimeInput = React.createRef();
-        this.popupTimeTrigger = React.createRef();
-        this.popupTime = null;
         this.pickerTime = null;
     }
 
     componentDidMount() {
-        window.addEventListener('click', (e) => this.addBackDrop(e));
-
+        const date = new Date();
+        date.setHours(0);
+        date.setMinutes(0)
         //Popup year month
         this.pickerYearMonth = new Picker(this.popupYearMonthInput.current, {
             format: 'MM:YYYY',
             controls: false,
             inline: true,
+            date: date
         });
         this.pickerTime = new Picker(this.popupTimeInput.current, {
             format: 'HH:mm',
             controls: false,
             inline: true,
+            date: date
         });
-
+        this.changeCurrentPoint('start');
     }
 
     componentWillUnmount() {
-        window.removeEventListener('click', (e) => this.addBackDrop(e));
     }
 
-    addBackDrop(e) {
-        if (this.state.showDatePicker && !ReactDOM.findDOMNode(this).contains(e.target)) {
-            this.showDatePicker(false);
+    convertTextTime() {
+        let time, hasMin = true, hasSec = true;
+        const startTime = this.state.selectedDateStart ? this.state.selectedDateStart.getTime() : 0;
+        const endTime = this.state.selectedDateEnd ? this.state.selectedDateEnd.getTime() : 0;
+        time = (endTime - startTime) / 1000;
+        if (time === 0 || !this.state.selectedDateStart || !this.state.selectedDateEnd) {
+            return '';
         }
-    }
+        var text = '';
+        var months = Math.floor(time / 60 / 60 / 24 / 30);
+        if (months > 0) text += months + ' tháng ';
+        time -= months * 30 * 24 * 60 * 60;
+        var days = Math.floor(time / 60 / 60 / 24);
+        if (text.length > 0 || days > 0) {
+            text += days + ' ngày ';
+        }
+        time -= days * 24 * 60 * 60;
+        var hours = Math.floor(time / 60 / 60);
+        if (text.length > 0 || hours > 0) {
+            text += hours + ' giờ ';
+        }
+        if (months == 0) {
+            // Nếu có tháng thì k hiển thị phút nữa
+            time -= hours * 60 * 60;
+            var minutes = Math.floor(time / 60);
+            if (hasMin && (text.length > 0 || minutes > 0)) {
+                text += minutes + ' phút ';
+            }
 
-    showDatePicker(showDatePicker = true) {
-        this.setState({showDatePicker})
+            // Nếu có ngày thì k hiển thị giây nữa
+            time -= minutes * 60;
+            if (hasSec && ((text.length > 0 || time > 0) && days == 0)) {
+                text += Math.round(time) + ' giây';
+            }
+        }
+        if (!text.length) text = '0 giây';
+        return text;
     }
 
     getMonthDetails(date) {
@@ -113,14 +156,6 @@ class MyDatePicker extends React.Component {
             });
         }
         return days;
-    }
-
-    setDate(dateData) {
-        let selectedDay = new Date(dateData.year, dateData.month - 1, dateData.date).getTime();
-        this.setState({selectedDay})
-        if (this.props.onChange) {
-            this.props.onChange(selectedDay);
-        }
     }
 
     setMonth(offset) {
@@ -169,16 +204,27 @@ class MyDatePicker extends React.Component {
     }
 
     selectDate(date) {
+        date = new Date(date.getTime());
         if (this.state.currentPoint === 'start') {
+            if (!!this.state.selectedDateEnd && (date.getTime() > this.state.selectedDateEnd.getTime())) {
+                return;
+            }
             this.setState({selectedDateStart: date});
         }
         if (this.state.currentPoint === 'end') {
+            if (!!this.state.selectedDateStart && (date.getTime() < this.state.selectedDateStart.getTime())) {
+                return;
+            }
             this.setState({selectedDateEnd: date});
         }
     }
 
     changeCurrentPoint(currentPoint) {
-        this.setState({currentPoint})
+        this.setState({currentPoint});
+        const date = (currentPoint === 'start' ? this.state.selectedDateStart : this.state.selectedDateEnd);
+        if (date) {
+            this.pickerTime.setDate(date);
+        }
     }
 
     renderCalendar() {
@@ -216,22 +262,41 @@ class MyDatePicker extends React.Component {
         )
     }
 
+    selectDefaultDate(item) {
+        this.setState({
+            selectedDateStart: item.start,
+            selectedDateEnd: item.end,
+        });
+    }
+
     render() {
         return (
-            <div className='MyDatePicker'>
-                <div className='mdp-input' onClick={() => this.showDatePicker(true)}>
-                    <input type='date' ref={inputRef}/>
-                </div>
+            <div className='HDDateRangePicker'>
                 {this.state.showDatePicker ? (
                     <div className='mdp-container'>
+                        <div className='range-head-days'>
+                            <Swiper
+                                spaceBetween={16}
+                                slidesPerView={3}
+                                navigation>
+                                {this.rangeDefault.map((value, index) => {
+                                    return (
+                                        <SwiperSlide key={index.toString()}>
+                                            <span className="item-select-range"
+                                                  onClick={() => this.selectDefaultDate(value)}>{value.text}</span>
+                                        </SwiperSlide>
+                                    )
+                                })}
+                            </Swiper>
+                        </div>
                         <div className='range-head'>
                             <input ref={this.inputStart} readOnly={true}
-                                   value={moment(this.state.selectedDateStart).format('DD/MM/YYYY HH:mm')}
+                                   value={this.state.selectedDateStart ? 'Từ ' + moment(this.state.selectedDateStart).format('DD/MM/YYYY HH:mm') : ''}
                                    onClick={() => this.changeCurrentPoint('start')}
                                    className={"app-input app-input-start " + (this.state.currentPoint === 'start' ? 'active' : '')}
                                    placeholder="Từ ngày"/>
                             <input ref={this.inputEnd} readOnly={true} onClick={() => this.changeCurrentPoint('end')}
-                                   value={moment(this.state.selectedDateEnd).format('DD/MM/YYYY HH:mm')}
+                                   value={this.state.selectedDateEnd ? 'Đến ' + moment(this.state.selectedDateEnd).format('DD/MM/YYYY HH:mm') : ''}
                                    className={"app-input app-input-end " + (this.state.currentPoint === 'end' ? 'active' : '')}
                                    placeholder="Đến ngày"/>
                         </div>
@@ -240,6 +305,9 @@ class MyDatePicker extends React.Component {
                                 <div className='mdpchb-inner' onClick={() => this.setMonth(-1)}>
                                     <img src={icons.left}/>
                                 </div>
+                                {this.checkToday() === -1 ? (
+                                    <button className="goto-today goto-today-item-left"
+                                            onClick={() => this.gotoToday()}>Hôm nay</button>) : ''}
                             </div>
                             <div className='mdpch-container'>
                                 <div ref={this.popupYearMonthTrigger}
@@ -260,6 +328,9 @@ class MyDatePicker extends React.Component {
                                 </div>
                             </div>
                             <div className='mdpch-button'>
+                                {this.checkToday() === 1 ? (
+                                    <button className="goto-today goto-today-item-right"
+                                            onClick={() => this.gotoToday()}>Hôm nay</button>) : ''}
                                 <div className='mdpchb-inner' onClick={() => this.setMonth(1)}>
                                     <img src={icons.right}/>
                                 </div>
@@ -273,8 +344,9 @@ class MyDatePicker extends React.Component {
                             <div>
                                 <label>Chọn giờ</label>
                                 <div>
-                                    <span onClick={event => this.togglePopupTime(true)}>
-                                        {moment(this.state.currentPoint === 'start' ? this.state.selectedDateStart : this.state.selectedDateEnd).format('HH:mm')}
+                                    <span className="time-input" onClick={event => this.togglePopupTime(true)}>
+                                        {(this.state.currentPoint === 'start' ? this.state.selectedDateStart : this.state.selectedDateEnd) ? moment((this.state.currentPoint === 'start' ? this.state.selectedDateStart : this.state.selectedDateEnd)).format('HH:mm') : '00:00'}
+                                        <img src={icons.down}/>
                                     </span>
                                     <div ref={this.popupTimeContent} id='popup-time'
                                          style={{display: (this.state.visiblePopupTime ? 'block' : 'none')}}>
@@ -290,6 +362,18 @@ class MyDatePicker extends React.Component {
                                 </div>
                             </div>
 
+                        </div>
+                        <div className='mdpc-footer'>
+                            <div className='mdpc-footer-left'>
+                                <span>{this.convertTextTime()}</span>
+                            </div>
+                            <div className='mdpc-footer-right'>
+                                <button onClick={() => this.onHide()} className="mpci-close">Đóng</button>
+                                <button disabled={!this.convertTextTime()} onClick={() => this.onSubmit()}
+                                        className={"mpci-submit " + (!!this.convertTextTime() ? '' : 'disabled')}>Xác
+                                    nhận
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ) : ''}
@@ -326,32 +410,139 @@ class MyDatePicker extends React.Component {
             currentMonth: date.format('MM'),
             daysInMonth: this.getMonthDetails(date.toDate()),
         });
+        this.pickerYearMonth.setDate(date.toDate());
     }
 
     changeTime(date) {
-        console.log(date);
+        console.log(this.state.currentPoint, date);
         if (this.state.currentPoint === 'start') {
             const currentDate = this.state.selectedDateStart;
-            currentDate.setHours(date.getHours());
-            currentDate.setMinutes(date.getMinutes());
-            this.setState({
-                selectedDateStart: currentDate
-            });
+            if (currentDate) {
+                currentDate.setHours(date.getHours());
+                currentDate.setMinutes(date.getMinutes());
+                this.setState({
+                    selectedDateStart: currentDate
+                });
+            }
         }
         if (this.state.currentPoint === 'end') {
             const currentDate = this.state.selectedDateEnd;
-            currentDate.setHours(date.getHours());
-            currentDate.setMinutes(date.getMinutes());
-            this.setState({
-                selectedDateEnd: currentDate
-            });
+            if (currentDate) {
+                currentDate.setHours(date.getHours());
+                currentDate.setMinutes(date.getMinutes());
+                this.setState({
+                    selectedDateEnd: currentDate
+                });
+            }
         }
 
+    }
+
+    checkToday() {
+        const start = this.state.daysInMonth[0].date.getTime();
+        const end = this.state.daysInMonth[this.state.daysInMonth.length - 1].date.getTime();
+        const today = new Date().getTime();
+        if (start > today) {
+            return -1;
+        }
+        if (today > end) {
+            return 1;
+        }
+        return 0;
+    }
+
+    gotoToday() {
+        const today = new Date();
+        const date = moment(today);
+        this.setState({
+            currentYear: date.format('YYYY'),
+            currentMonth: date.format('MM'),
+            daysInMonth: this.getMonthDetails(date.toDate()),
+        });
+        this.pickerYearMonth.setDate(date.toDate());
+        return null;
+    }
+
+    onSubmit() {
+        this.props.onEvent({
+            type: 'submit',
+            payload: {
+                fromDate: this.state.selectedDateStart,
+                toDate: this.state.selectedDateEnd,
+            }
+        });
+    }
+
+    onHide() {
+        this.props.onEvent({
+            type: 'hide',
+            payload: {}
+        });
+    }
+}
+
+class AppComponent extends React.Component {
+    constructor() {
+        super();
+        this.state = {
+            popupVisible: false
+        };
+
+    }
+
+    componentDidMount() {
+        this.props.popupVisible((v) => {
+            this.eventVisible(v);
+        });
+    }
+
+    render() {
+        return <div className="date-range-picker-container">
+            {this.state.popupVisible ? (<HDDateRangePicker onEvent={(data) => this.onEvent(data)}/>) : null}
+        </div>;
+    }
+
+    onEvent(data) {
+        switch (data.type) {
+            case "submit": {
+                if (this.props.onSubmit) {
+                    this.props.onSubmit(data.payload);
+                }
+                break;
+            }
+            default: {
+                this.setState({popupVisible: false})
+                break;
+            }
+        }
+    }
+
+    eventVisible(visible) {
+        this.setState({popupVisible: visible});
     }
 }
 
 export default class DateRangePicker {
     constructor(dom) {
-        ReactDOM.render(<AppComponent/>, document.querySelector(dom));
+        this.submitCallback = null;
+        this.visibleCallback = null;
+        ReactDOM.render(<AppComponent popupVisible={(callback) => {
+            this.visibleCallback = callback
+        }} onSubmit={(data) => {
+            this.submitCallback ? this.submitCallback(data) : null;
+            this.hide();
+        }}/>, document.querySelector(dom));
+    }
+
+    onSubmit(callback) {
+        this.submitCallback = callback;
+    }
+
+    show() {
+        this.visibleCallback(true);
+    }
+
+    hide() {
+        this.visibleCallback(false)
     }
 }

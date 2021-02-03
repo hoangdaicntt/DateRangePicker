@@ -3,17 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <div id="xxx"></div>
+<div id="xxx2"></div>
+
+<button onclick="x.show();">OK1</button>
+<button onclick="x2.show();">OK2</button>
 
 <script src="dist/picker.js"></script>
 
 <script>
-    new DateRangePicker('#xxx')
+    const x = new DateRangePicker.default('#xxx');
+    const x2 = new DateRangePicker.default('#xxx2');
+    // x.onSubmit((data) => {
+    //     console.log(data);
+    // });
+    // x.show();
 </script>
 </body>
 </html>
