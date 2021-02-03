@@ -12,17 +12,17 @@ module.exports = {
         filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
         library: 'DateRangePicker',
-        // libraryTarget: "umd",
+        libraryTarget: "umd",
     },
-    // optimization: {
-    //     minimize: true,
-    //     minimizer: [new TerserPlugin()],
-    // },
-    // plugins: [
-    //     new JavaScriptObfuscator({
-    //         rotateUnicodeArray: true
-    //     }, ['excluded_bundle_name.js'])
-    // ],
+    optimization: {
+        minimize: true,
+        minimizer: [new TerserPlugin()],
+    },
+    plugins: [
+        new JavaScriptObfuscator({
+            rotateUnicodeArray: true
+        }, ['excluded_bundle_name.js'])
+    ],
     module: {
         rules: [
             {
